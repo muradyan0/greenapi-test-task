@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings App</title>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="left-panel">
+        <h2>Настройки</h2>
+        <form id="settingsForm">
+          <div class="form-group">
+            <label for="idInstance">ID Instance:</label>
+            <input type="text" id="idInstance" name="idInstance" required />
+          </div>
+
+          <div class="form-group">
+            <label for="apiTokenInstance">API Token Instance:</label>
+            <input
+              type="password"
+              id="apiTokenInstance"
+              name="apiTokenInstance"
+              required
+            />
+          </div>
+
+          <div class="button-group">
+            <button
+              type="button"
+              hx-post="/api/get-settings"
+              hx-ext="json-enc"
+              hx-trigger="click"
+              hx-target="#responseArea"
+              hx-swap="innerHTML"
+              hx-indicator=".loading"
+            >
+              Get Settings
+            </button>
+
+            <button
+              type="button"
+              hx-post="/api/get-state"
+              hx-ext="json-enc"
+              hx-trigger="click"
+              hx-target="#responseArea"
+              hx-swap="innerHTML"
+              hx-indicator=".loading"
+            >
+              Get State Instance
+            </button>
+          </div>
+
+          <div class="form-group">
+            <label for="phoneNumber">Phone Number (with country code):</label>
+            <input
+              type="text"
+              required
+              id="phoneNumber"
+              name="phoneNumber"
+              placeholder="79001234567"
+              pattern="[0-9]{11,15}"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="messageText">Message:</label>
+            <textarea
+              id="messageText"
+              name="messageText"
+              rows="4"
+              required
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <button
+              class="form-button"
+              type="button"
+              hx-post="/api/send-message"
+              hx-ext="json-enc"
+              hx-trigger="click"
+              hx-target="#responseArea"
+              hx-swap="innerHTML"
+              hx-indicator=".loading"
+            >
+              Send Message
+            </button>
+          </div>
+
+          <div class="form-group">
+            <label for="fileUrl">File URL:</label>
+            <input
+              type="text"
+              id="fileUrl"
+              name="fileUrl"
+              placeholder="https://example.com/file.pdf"
+            />
+          </div>
+
+          <button
+            class="form-button"
+            type="button"
+            hx-post="/api/send-file"
+            hx-ext="json-enc"
+            hx-trigger="click"
+            hx-target="#responseArea"
+            hx-swap="innerHTML"
+            hx-indicator=".loading"
+          >
+            Send File
+          </button>
+        </form>
+      </div>
+
+      <div class="right-panel">
+        <h2>Ответ</h2>
+        <div id="responseArea" class="response-box">
+          <!-- Response will appear here -->
+          <p>Отправьте запрос, чтобы увидеть ответ</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document
+        .getElementById("settingsForm")
+        .addEventListener("htmx:afterRequest", function (evt) {
+          if (evt.detail.successful) {
+            try {
+              const response = JSON.parse(evt.detail.xhr.responseText);
+              const prettyResponse = JSON.stringify(response, null, 2);
+              document.getElementById(
+                "responseArea"
+              ).innerHTML = `<pre>${prettyResponse}</pre>`;
+            } catch (e) {
+              document.getElementById(
+                "responseArea"
+              ).innerHTML = `<p class="error">Ошибка форматирования ответа</p>`;
+            }
+          } else {
+            document.getElementById(
+              "responseArea"
+            ).innerHTML = `<p class="error">Ошибка запроса: ${evt.detail.xhr.statusText}</p>`;
+          }
+        });
+
+      document
+        .getElementById("phoneNumber")
+        .addEventListener("input", function (e) {
+          if (e.target.validity.patternMismatch) {
+            e.target.setCustomValidity(
+              "Please enter a valid phone number (digits only, 11-15 characters)"
+            );
+          } else {
+            e.target.setCustomValidity("");
+          }
+        });
+
+      document
+        .getElementById("fileUrl")
+        .addEventListener("input", function (e) {
+          try {
+            new URL(e.target.value);
+            e.target.setCustomValidity("");
+          } catch (_) {
+            e.target.setCustomValidity("Please enter a valid URL");
+          }
+        });
+    </script>
+  </body>
+</html>
