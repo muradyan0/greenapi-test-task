@@ -6,8 +6,8 @@
 
 ## Время на выполнения задания: 3 дня.
 ## Требования:
-1. Требуется разработать HTML-страницу с вызовами методов GREEN-API: •
-getSettings
+1. Требуется разработать HTML-страницу с вызовами методов GREEN-API:
+- getSettings
 - getStateInstance
 - sendMessage
 - sendFileByUrl
